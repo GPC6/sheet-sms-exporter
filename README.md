@@ -103,3 +103,7 @@ Repository variable `GOOGLE_OAUTH_CLIENT_ID`와 Repository secret `GOOGLE_OAUTH_
 별도 Cloud 프로젝트에 Sheets API, External/Testing 동의 화면, Desktop OAuth 클라이언트와 테스트 사용자를 등록했습니다. 개발 환경의 `oauth-config.json`은 Git에서 제외되며, 설정을 포함한 macOS arm64 APP/ZIP/DMG를 다시 생성했습니다. 타입 검사와 31개 자동 테스트를 다시 통과했습니다.
 
 패키징한 앱에서 실제 Google 로그인·시트 권한 승인을 마치고 계정이 표시되는 것을 확인했습니다. 암호화 세션 파일도 소유자만 읽고 쓸 수 있는 권한(`0600`)으로 저장되었습니다. 실제 시트 읽기·쓰기는 아직 미검증입니다. 다른 계정으로 시험하려면 Google Auth Platform의 테스트 사용자 목록에 먼저 추가해야 합니다.
+
+### 릴리즈 빌드 검증 (2026-11-08)
+
+GitHub Actions에서 Windows x64, macOS arm64/x64 모두 타입 검사와 자동 테스트 31개를 통과하고 배포 파일을 생성했습니다. [빌드 실행 기록](https://github.com/GPC6/sheet-sms-exporter/actions/runs/42449310444)에서 결과를 확인할 수 있습니다. Windows와 Intel Mac에서 실제 앱을 조작하는 검증은 아직 수행하지 않았습니다.
