@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>시트 문자 도우미</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M7 3h12l6 6v20H7zM19 3v7h6M11 15h10M11 20h10M16 15v10M11 25h10"/></svg><span>시트 문자 도우미</span></div>
+    <span class="version">0.1 · 데스크톱</span>
+  </header>
+  <main>
+    <div class="intro"><h1>문자 발송 명단을 준비하세요.</h1><p>구글 시트의 입금 상태를 나누어, 발송 프로그램에 넣을 엑셀을 만듭니다.</p></div>
+    <div id="notice" class="notice" role="status" hidden></div>
+    <section class="account-row" aria-label="구글 계정">
+      <div><span class="account-label">Google 계정</span><strong id="account">로그인이 필요합니다</strong><p id="account-help">브라우저에서 로그인하고 시트 접근을 허용해 주세요.</p></div>
+      <div class="account-actions"><button id="login" class="button secondary">Google로 로그인</button><button id="cancel-login" class="button quiet" hidden>로그인 취소</button><button id="logout" class="button quiet" hidden>연결 해제</button></div>
+    </section>
+    <div class="workspace">
+      <section class="settings" aria-labelledby="source-title">
+        <h2 id="source-title">시트와 저장 위치</h2>
+        <label for="sheet-url">스프레드시트 링크</label>
+        <div class="input-action"><input id="sheet-url" type="url" placeholder="https://docs.google.com/spreadsheets/d/…" autocomplete="off" spellcheck="false"><button id="load-sheet" class="button secondary">불러오기</button></div>
+        <p id="sheet-title" class="field-hint">사용 중인 계정에 공유된 시트를 연결하세요.</p>
+        <div class="field-grid">
+          <div><label for="sheet-tab">시트 탭</label><select id="sheet-tab" disabled><option value="">링크를 먼저 불러오세요</option></select></div>
+          <div><label for="status-column">상태 컬럼</label><input id="status-column" value="문자송부여부" maxlength="100"></div>
+        </div>
+        <p class="field-hint">첫 행에 <b>이름</b>, <b>연락처</b>, <b>상태 컬럼</b>이 있어야 합니다.</p>
+        <div class="folder-field"><label>엑셀 저장 폴더</label><div class="folder-row"><span id="output-dir"></span><button id="choose-folder" class="button quiet">변경</button></div></div>
+        <label class="checkbox-row"><input type="checkbox" id="mark-complete" checked><span><strong>생성 후 입금완료 행에 완료 표시</strong><small>해당 상태 셀을 완료(mm.dd)로 바꿉니다.<br>미입금 상태는 유지되며, 실제 문자 발송을 뜻하지 않습니다.</small></span></label>
+        <button id="preview" class="button secondary full">대상 확인</button>
+      </section>
+      <section class="summary" aria-labelledby="summary-title">
+        <div><h2 id="summary-title">생성할 엑셀</h2><p class="summary-help">상태별로 두 파일을 저장합니다.</p></div>
+        <dl class="counts"><div><dt><span class="status-dot paid"></span>입금완료자</dt><dd><span id="paid-count">—</span><small>명</small></dd></div><div><dt><span class="status-dot unpaid"></span>미입금자</dt><dd><span id="unpaid-count">—</span><small>명</small></dd></div></dl>
+        <p id="preview-hint" class="field-hint">대상을 확인하면 인원수가 표시됩니다.</p>
+        <div class="format-info"><span>엑셀 컬럼</span><strong>PersonName <span>/</span> Cellular</strong><p>이름과 연락처만 저장합니다.<br>연락처의 앞자리 0을 유지합니다.</p></div>
+        <button id="export" class="button primary full" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M5 16v5h14v-5"/></svg>엑셀 생성</button>
+        <p class="local-note">시트 데이터는 이 컴퓨터에서 처리합니다.</p>
+      </section>
+    </div>
+    <div id="feedback" role="status" aria-live="polite" hidden></div>
+    <section id="result" class="result" aria-labelledby="result-title" hidden><div><h2 id="result-title">엑셀을 저장했습니다.</h2><p id="result-detail"></p><ul id="result-files"></ul></div><button id="open-output" class="button secondary">저장 폴더 열기</button></section>
+    <footer><p>이 앱은 문자 발송 대상 파일을 만듭니다. 문자 전송은 발송 프로그램에서 진행하세요.</p><details><summary>구글 접근 권한 안내</summary><p>링크로 시트를 불러오기 위해 로그인 계정이 접근할 수 있는 Google 스프레드시트의 읽기·수정 권한을 요청합니다. 저장한 링크 하나로 권한이 제한되지는 않습니다. 로그인 정보는 운영체제 보안 기능으로 암호화해 보관하며, 연결 해제로 삭제할 수 있습니다.</p></details></footer>
+  </main>
+</body>
+</html>
