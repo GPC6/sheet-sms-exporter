@@ -1,11 +1,13 @@
 import { mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { createHash } from 'node:crypto';
 import { afterEach, beforeEach, describe, it, expect, vi } from 'vitest';
 import { unzipSync, strFromU8 } from 'fflate';
 import { exportRecipients, type SheetAccess } from '../src/core/export';
 import { snapshot } from '../src/core/model';
 import type { SheetInput } from '../src/shared';
+import legacyParts from './fixtures/legacy-sms-parts.json';
 
 const input: SheetInput = { url: 'https://docs.google.com/spreadsheets/d/test-only', sheetName: '명단', statusColumn: '상태', markComplete: true };
 const source = snapshot([['이름', '연락처', '상태'], ['=1+1', '010-0000-0001', '입금완료'], [], ['테스트 B', '01000000002', '미입금']], '상태');
@@ -35,6 +37,22 @@ describe('recipient export and partial failures', () => {
     expect(second.files[0]).toMatch(/_2\.xlsx$/);
     expect(await readFile(first.files[0])).toEqual(bytes);
     expect(api.mark).not.toHaveBeenCalled();
+  });
+  // Fingerprints were captured from the original script and template with synthetic rows.
+  // Only personal document properties are deliberately excluded from compatibility.
+  it.each([0, 1, 2, 51] as const)('matches every legacy XLSX part for %i recipients', async count => {
+    const rows = Array.from({ length: count }, (_, i) => [i === 0 ? '=1+1' : `테스트 ${i} & <확인>`, `010${String(i).padStart(8, '0')}`, '입금완료']);
+    const data = snapshot([['이름', '연락처', '상태'], ...rows, ['미입금 테스트', '01000000099', '미입금']], '상태');
+    vi.mocked(api.read).mockResolvedValue(data);
+    const result = await exportRecipients(api, { ...input, markComplete: false }, data.digest, directory, date);
+    const bytes = await readFile(result.files[0]);
+    const parts = unzipSync(bytes);
+    const fingerprints = Object.fromEntries(Object.entries(parts).filter(([name]) => name !== 'docProps/core.xml').map(([name, data]) => [name, createHash('sha256').update(data).digest('hex')]));
+    expect(fingerprints).toEqual(legacyParts[count]);
+    expect(bytes.readUInt16LE(8)).toBe(0); // Legacy ZIP uses stored entries, not deflate.
+    expect(strFromU8(parts['docProps/core.xml'])).not.toMatch(/<(?:dc:creator|cp:lastModifiedBy|dcterms:created|dcterms:modified)[ >]/);
+    const unpaid = strFromU8(unzipSync(await readFile(result.files[1]))['xl/workbook.xml']);
+    expect(unpaid).toContain('name="Sheet1"');
   });
   it('blocks stale preview before creating any files', async () => {
     await expect(exportRecipients(api, input, 'old-digest', directory, date)).rejects.toThrow('변경');

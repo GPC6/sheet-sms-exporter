@@ -15,6 +15,7 @@ session.enc*
 secret/
 output/
 *.xlsx
+!src/core/sms-template.xlsx
 *.xlsm
 *.csv
 *.log

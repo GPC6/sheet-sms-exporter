@@ -24,4 +24,5 @@ await build({ entryPoints: ['src/main.ts'], outfile: 'dist/main.cjs', bundle: tr
 await build({ entryPoints: ['src/preload.ts'], outfile: 'dist/preload.cjs', bundle: true, platform: 'node', format: 'cjs', external: ['electron'], target: 'node22' });
 await build({ entryPoints: ['src/renderer/app.ts'], outfile: 'dist/app.js', bundle: true, platform: 'browser', target: 'chrome130' });
 await Promise.all(['index.html', 'style.css'].map(file => copyFile(`src/renderer/${file}`, `dist/${file}`)));
+await copyFile('src/core/sms-template.xlsx', 'dist/sms-template.xlsx');
 console.log(oauth.clientId ? '앱 빌드 완료 (Google 로그인 설정 포함)' : '앱 빌드 완료 (Google 로그인 설정 필요)');

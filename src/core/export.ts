@@ -1,6 +1,6 @@
 import { mkdir, open, rm } from 'node:fs/promises';
 import path from 'node:path';
-import writeXlsxFile from 'write-excel-file/node';
+import XLSX from 'xlsx-js-style';
 import { PAID, UNPAID, generationDate, type Snapshot } from './model';
 import { UserError, publicError } from './errors';
 import type { SheetInput, ExportResult } from '../shared';
@@ -33,10 +33,27 @@ export async function exportRecipients(api: SheetAccess, input: SheetInput, expe
   try {
     for (const [status, label] of [[PAID, '입금완료자'], [UNPAID, '미입금자']]) {
       const targets = source.rows.filter(row => row.status === status);
-      const buffer = await writeXlsxFile([
-        [{ value: 'PersonName', type: String, fontWeight: 'bold' }, { value: 'Cellular', type: String, fontWeight: 'bold' }],
-        ...targets.map(row => [{ value: row.name, type: String }, { value: row.phone, type: String, format: '@' }]),
-      ], { sheet: 'Recipients', columns: [{ width: 22 }, { width: 24 }] }).toBuffer();
+      // Keep the legacy template and writer: the SMS importer depends on the XLSX structure.
+      const workbook = XLSX.readFile(path.join(__dirname, 'sms-template.xlsx'), { cellStyles: true });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      ['PersonName', 'Cellular'].forEach((header, column) => {
+        const address = XLSX.utils.encode_cell({ r: 0, c: column });
+        sheet[address] = { ...sheet[address], v: header, t: 's' };
+      });
+      const styles = ['A2', 'B2'].map(address => ({ s: sheet[address]?.s, z: sheet[address]?.z }));
+      const range = XLSX.utils.decode_range(sheet['!ref'] ?? 'A1:B1');
+      const lastRow = Math.max(range.e.r + 1, 2 + targets.length);
+      for (let row = 2; row <= lastRow; row++) {
+        delete sheet[`A${row}`];
+        delete sheet[`B${row}`];
+      }
+      targets.forEach((target, index) => {
+        [target.name, target.phone].forEach((value, column) => {
+          sheet[XLSX.utils.encode_cell({ r: index + 1, c: column })] = { ...styles[column], v: value, t: 's' };
+        });
+      });
+      sheet['!ref'] = XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: Math.max(targets.length, 1), c: 1 } });
+      const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
       files.push(await uniqueWrite(outputDir, `${date.replace('.', '')}_문자발송대상_${label}`, buffer));
     }
   } catch (error) {
