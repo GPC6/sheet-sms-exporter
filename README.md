@@ -70,7 +70,7 @@ npm run dist
 
 Repository variable `GOOGLE_OAUTH_CLIENT_ID`와 Repository secret `GOOGLE_OAUTH_CLIENT_SECRET`을 설정합니다. `v0.1.0` 같은 태그를 푸시하면 Windows x64, macOS arm64/x64를 빌드해 SHA-256 체크섬과 함께 **Draft Release**에 첨부합니다. 빌드 결과를 확인한 뒤 릴리즈를 게시합니다. 수동 workflow 실행은 빌드 산출물만 만듭니다. OAuth 설정이 없으면 릴리즈 빌드는 실패합니다.
 
-현재 배포 설정은 서명 인증서가 없는 테스트용입니다. macOS 공증/Developer ID 서명과 Windows 코드 서명은 별도 준비가 필요합니다. 미서명 앱은 Gatekeeper/SmartScreen 경고나 실행 차단이 발생할 수 있습니다. 이 저장소는 보안 기능을 해제하는 절차를 제공하지 않습니다. 정식 배포 전 워크플로에 서명·공증을 추가하세요. 자동 업데이트는 구현하지 않았습니다.
+현재 배포 설정은 테스트용입니다. Mac 앱은 번들과 내부 실행 파일에 ad-hoc 서명을 적용하고, 빌드 후 `codesign --verify --deep --strict` 검증을 통과해야 배포됩니다. Hardened Runtime은 유지하며 Electron 실행에 필요한 기본 entitlement를 사용합니다. Apple Developer ID 서명·공증과 Windows 코드 서명은 별도 준비가 필요합니다. Gatekeeper/SmartScreen 경고나 실행 차단이 발생할 수 있고, Mac 최초 실행 시 사용자의 별도 허용이 필요할 수 있습니다. 이 저장소는 보안 기능을 해제하는 절차를 제공하지 않습니다. 정식 배포 전 워크플로에 인증서 서명·공증을 추가하세요. 자동 업데이트는 구현하지 않았습니다.
 
 ## 보관 데이터와 보안 범위
 

@@ -37,7 +37,10 @@
     "directories": { "output": "release" },
     "files": ["dist/**/*", "package.json"],
     "artifactName": "${name}-${version}-${os}-${arch}.${ext}",
-    "mac": { "target": ["zip", "dmg"], "category": "public.app-category.productivity" },
+    "mac": {
+      "target": ["zip", "dmg"], "category": "public.app-category.productivity",
+      "identity": "-", "forceCodeSigning": true, "hardenedRuntime": true, "notarize": false
+    },
     "win": { "target": ["nsis", "zip"] },
     "nsis": { "oneClick": false, "allowToChangeInstallationDirectory": true }
   }
